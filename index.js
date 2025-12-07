@@ -1,10 +1,10 @@
+require("dotenv").config()
 const express = require('express');
 const cors = require('cors');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express();
 const port = process.env.PORT || 3000;
-require("dotenv").config()
-
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 
 app.use(cors());
 app.use(express.json())
@@ -65,17 +65,7 @@ app.get('/myLessons', async (req, res) => {
 
 
 
-app.get("/lessons/:id", async (req, res) => {
-  const lesson = await Lesson.findById(req.params.id);
-  if (!lesson) return res.status(404).json({ message: "Not found" });
 
-  const userId = req.user._id;
-
-  res.json({
-    ...lesson.toObject(),
-    liked: lesson.likedBy.includes(userId),
-  });
-});
 
 
 
