@@ -4,10 +4,11 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const app = express();
 const port = process.env.PORT || 3000;
 require("dotenv").config()
-// , ObjectId
+
 
 app.use(cors());
 app.use(express.json())
+
 
 app.get('/', (req,res)=>{
     res.send('Server is running')
@@ -25,28 +26,71 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    // await client.connect();
-    const db = client.db('lessonsDB')
-    const lesson = db.collection('lessons')
+    await client.connect();
 
+   const db = client.db('lessonsDB')
+   const lessonCollection = db.collection('lessons')
+   const likeCollection = db.collection("likes");
+   const favoriteCollection = db.collection("favorites");
+   const reportCollection = db.collection("reports");
+
+
+  // All Lessons Get
  app.get('/allLessons', async (req,res)=>{
-    const result = await lesson.find().toArray()
+    const result = await lessonCollection.find().toArray()
     res.send(result)
 })
 
+  // Single Lesson Get
  app.get('/allLessons/:id', async (req,res)=>{
     const id = req.params.id
     const query = {_id: new ObjectId(id)}
-    const result = await lesson.findOne(query)
+    const result = await lessonCollection.findOne(query)
     res.send(result)
 })
 
-
+  //Single Lesson Post
 app.post('/allLessons',async (req,res)=>{
   const addLesson = req.body
-  const result = await lesson.insertOne(addLesson)
+  const result = await lessonCollection.insertOne(addLesson)
   res.send(result)
 })
+
+  // My Post Lessons All
+app.get('/myLessons', async (req, res) => {
+  const email = req.query.email;
+  const result = await lessonCollection.find({ email: email }).toArray();
+  res.send(result);
+});
+
+
+
+app.get("/lessons/:id", async (req, res) => {
+  const lesson = await Lesson.findById(req.params.id);
+  if (!lesson) return res.status(404).json({ message: "Not found" });
+
+  const userId = req.user._id;
+
+  res.json({
+    ...lesson.toObject(),
+    liked: lesson.likedBy.includes(userId),
+  });
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
