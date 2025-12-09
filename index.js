@@ -30,16 +30,81 @@ async function run() {
 
    const db = client.db('lessonsDB')
    const lessonCollection = db.collection('lessons')
-   const likeCollection = db.collection("likes");
-   const favoriteCollection = db.collection("favorites");
-   const reportCollection = db.collection("reports");
+  //  const likeCollection = db.collection("likes");
+  //  const favoriteCollection = db.collection("favorites");
+  //  const reportCollection = db.collection("reports");
+   const userCollection = db.collection('users')
+   const commentCollection = db.collection('comments')
 
 
-  // All Lessons Get
- app.get('/allLessons', async (req,res)=>{
-    const result = await lessonCollection.find().toArray()
-    res.send(result)
-})
+
+   
+
+
+app.get("/allLessons", async (req, res) => {
+  const {limit,skip,sort = "createdAt",order = "desc",search = "", category = "", tone = ""} = req.query;
+  const sortKey = sort === "saved" ? "saved" : "createdAt";
+  const sortOrder = order === "desc" ? -1 : 1;
+  const query = search ? { title: { $regex: "^" + search, $options: "i" } } : {};
+   if (category) { query.category = category;}
+   if (tone) { query.emotionalTone = tone;}
+  const totalLessons = await lessonCollection.countDocuments(query);
+  const lessons = await lessonCollection
+    .find(query)
+    .sort({ [sortKey]: sortOrder })
+    .limit(parseInt(limit) || 0)
+    .skip(parseInt(skip) || 0)
+    .toArray();
+    res.send({ lessons, totalLessons });
+});
+
+
+
+
+
+app.get("/featuredLessons", async (req, res) => {
+
+   const result = await lessonCollection.find()
+   .sort({ createdAt: -1 }) 
+   .limit(8)         
+   .toArray()
+
+    res.send(result);
+ 
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   // Single Lesson Get
  app.get('/allLessons/:id', async (req,res)=>{
@@ -48,6 +113,9 @@ async function run() {
     const result = await lessonCollection.findOne(query)
     res.send(result)
 })
+
+
+
 
   //Single Lesson Post
 app.post('/allLessons',async (req,res)=>{
@@ -64,13 +132,119 @@ app.get('/myLessons', async (req, res) => {
 });
 
 
+ // user save
+  app.post('/user', async (req, res) => {
+  try {
+    const userData = req.body;
+    userData.created_at = new Date().toISOString();
+    userData.last_loggedIn = new Date().toISOString();
+    userData.role = 'customer'
+    const query = { email: userData.email };
+
+    const alreadyExists = await userCollection.findOne(query);
+
+    if (alreadyExists) {
+      console.log("Updating user info");
+
+      const result = await userCollection.updateOne(query, {
+        $set: {
+          last_loggedIn: new Date().toISOString(),
+          name: userData.name,   // optional: update name in case it changed
+        },
+      });
+
+      return res.send(result);
+    }
+
+    console.log("Saving new user");
+
+    // NEW USER → set timestamps
+   
+
+    const result = await userCollection.insertOne(userData);
+
+    res.send(result);
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ message: "Server Error", error });
+  }
+});
+
+ 
 
 
+  //get a user role
+  app.get('/user/role/:email', async(req,res)=>{
+    const email  = req.params.email
+    const result = await userCollection.findOne({email})
+    res.send({role: result?.role})
+  })
+
+ // comments
+
+app.post("/comments", async (req, res) => {
+  const { lessonId, userEmail, userName, comment } = req.body;
+
+  const newComment = {
+    lessonId,
+    userEmail,
+    userName,
+    comment,
+    createdAt: new Date(),
+  };
+
+  const result = await commentCollection.insertOne(newComment);
+  res.send(result);
+});
 
 
+app.get("/comments/:lessonId", async (req, res) => {
+  const lessonId = req.params.lessonId;
+  const comments = await commentCollection
+    .find({ lessonId })
+    .sort({ createdAt: -1 })
+    .toArray();
+
+  res.send(comments);
+});
 
 
+// lesson recommended
+app.get("/lessons/similar/:id", async (req, res) => {
+  const id = req.params.id;
+  const current = await lessonCollection.findOne({ _id: new ObjectId(id) });
 
+  if (!current) return res.send([]);
+
+  const similar = await lessonCollection
+    .find({
+      category: current.category,
+      _id: { $ne: current._id },
+    })
+    .limit(6)
+    .toArray();
+
+  res.send(similar);
+});
+
+
+   app.get("/lessons/recommended/:id", async (req, res) => {
+  const id = req.params.id;
+  const current = await lessonCollection.findOne({ _id: new ObjectId(id) });
+
+  if (!current) return res.send([]);
+
+  const recommended = await lessonCollection
+    .find({
+      emotionalTone: current.emotionalTone,
+      _id: { $ne: current._id },
+    })
+    .limit(6)
+    .toArray();
+
+  res.send(recommended);
+});
 
 
 
