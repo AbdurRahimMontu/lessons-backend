@@ -10,6 +10,47 @@ app.use(cors());
 app.use(express.json())
 
 
+
+//  const verifyFirebaseToken = async(req,res,next)=>{
+//         const token = req.headers.authorization.spilt(" ")[1];
+
+
+
+
+//         next();
+//  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// const isAdmin = (req, res, next) => {
+//   if (req.user?.role !== "admin") {
+//     return res.status(403).json({ message: "Only admin can perform this action" });
+//   }
+//   next();
+// };
+
+
+
+
+
+
+
+
+
+
+
 app.get('/', (req,res)=>{
     res.send('Server is running')
 })
@@ -38,7 +79,10 @@ async function run() {
 
 
 
-   
+   app.get("/users",async(req,res)=>{
+    const result = await userCollection.find().toArray()
+    res.send(result);
+   })
 
 
 app.get("/allLessons", async (req, res) => {
@@ -71,6 +115,17 @@ app.get("/featuredLessons", async (req, res) => {
 
     res.send(result);
  
+});
+
+
+
+// update lesson
+
+// GET single lesson
+app.get("/lesson/:id", async (req, res) => {
+  const id = req.params.id;
+  const lesson = await lessonsCollection.findOne({ _id: new ObjectId(id) });
+  res.send(lesson);
 });
 
 
