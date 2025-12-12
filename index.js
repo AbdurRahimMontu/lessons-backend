@@ -36,11 +36,8 @@ async function run() {
     const userCollection = db.collection("users");
     const commentCollection = db.collection("comments");
 
-    app.get("/users", async (req, res) => {
-      const result = await userCollection.find().toArray();
-      res.send(result);
-    });
-
+   
+     // All Lessons Get
     app.get("/allLessons", async (req, res) => {
       const {
         limit,
@@ -72,6 +69,47 @@ async function run() {
       res.send({ lessons, totalLessons });
     });
 
+
+    // GET single lesson
+    // app.get("/lesson/:id", async (req, res) => {
+    //   const id = req.params.id;
+    //   const lesson = await lessonCollection.findOne({ _id: new ObjectId(id) });
+    //   res.send(lesson);
+    // });
+
+
+    // Single Lesson Get
+    app.get("/allLessons/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await lessonCollection.findOne(query);
+      res.send(result);
+    });
+
+
+
+    //Single Lesson Post
+    app.post("/allLessons", async (req, res) => {
+      const addLesson = req.body;
+      const result = await lessonCollection.insertOne(addLesson);
+      res.send(result);
+    });
+
+
+
+
+
+
+
+
+
+ app.get("/users", async (req, res) => {
+      const result = await userCollection.find().toArray();
+      res.send(result);
+    });
+
+
+
     app.get("/featuredLessons", async (req, res) => {
       const result = await lessonCollection
         .find()
@@ -82,29 +120,20 @@ async function run() {
       res.send(result);
     });
 
-    // update lesson
 
-    // GET single lesson
-    app.get("/lesson/:id", async (req, res) => {
-      const id = req.params.id;
-      const lesson = await lessonCollection.findOne({ _id: new ObjectId(id) });
-      res.send(lesson);
-    });
+// GET /lessons author
+app.get("/lessons", async (req, res) => {
+  const lessons = await lessonCollection.find().toArray();
+  const totalLessons = await lessonCollection.countDocuments();
 
-    // Single Lesson Get
-    app.get("/allLessons/:id", async (req, res) => {
-      const id = req.params.id;
-      const query = { _id: new ObjectId(id) };
-      const result = await lessonCollection.findOne(query);
-      res.send(result);
-    });
+  res.send({
+    lessons,
+    totalLessons
+  });
+});
 
-    //Single Lesson Post
-    app.post("/allLessons", async (req, res) => {
-      const addLesson = req.body;
-      const result = await lessonCollection.insertOne(addLesson);
-      res.send(result);
-    });
+
+
 
     // My Post Lessons All
     app.get("/myLessons", async (req, res) => {
