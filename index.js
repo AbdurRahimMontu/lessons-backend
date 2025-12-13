@@ -26,7 +26,7 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    await client.connect();
+    // await client.connect();
 
     const db = client.db("lessonsDB");
     const lessonCollection = db.collection("lessons");
@@ -37,7 +37,7 @@ async function run() {
     const commentCollection = db.collection("comments");
 
    
-     // All Lessons Get
+     // All Lessons Get Search, Filter, Sort
     app.get("/allLessons", async (req, res) => {
       const {
         limit,
@@ -70,6 +70,34 @@ async function run() {
     });
 
 
+  // Featured Lessons Get
+    app.get("/featuredLessons", async (req, res) => {
+      const result = await lessonCollection
+        .find()
+        .sort({ createdAt: -1 })
+        .limit(8)
+        .toArray();
+
+      res.send(result);
+    });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     // GET single lesson
     // app.get("/lesson/:id", async (req, res) => {
     //   const id = req.params.id;
@@ -85,8 +113,16 @@ async function run() {
       const result = await lessonCollection.findOne(query);
       res.send(result);
     });
+    // Single Lesson Get
+    // app.get("/allLessons/email", async (req, res) => {
+    //   const id = req.params.id;
+    //   const query = { _id: new ObjectId(id) };
+    //   const result = await lessonCollection.findOne(query);
+    //   res.send(result);
+    // });
+  
 
-
+  
 
     //Single Lesson Post
     app.post("/allLessons", async (req, res) => {
@@ -110,15 +146,7 @@ async function run() {
 
 
 
-    app.get("/featuredLessons", async (req, res) => {
-      const result = await lessonCollection
-        .find()
-        .sort({ createdAt: -1 })
-        .limit(8)
-        .toArray();
 
-      res.send(result);
-    });
 
 
 // GET /lessons author
@@ -289,7 +317,7 @@ app.get("/lessons", async (req, res) => {
       }
     });
 
-    await client.db("admin").command({ ping: 1 });
+    // await client.db("admin").command({ ping: 1 });
     console.log("You successfully connected to MongoDB!");
   } finally {
     // await client.close();
