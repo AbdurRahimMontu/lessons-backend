@@ -3,7 +3,7 @@ const express = require("express");
 const cors = require("cors");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 5000;
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 app.use(cors());
@@ -38,7 +38,7 @@ async function run() {
 
    
      // All Lessons Get Search, Filter, Sort
-    app.get("/allLessons", async (req, res) => {
+    app.get("/publicLessons", async (req, res) => {
       const {
         limit,
         skip,
@@ -82,45 +82,33 @@ async function run() {
     });
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    // GET single lesson
-    // app.get("/lesson/:id", async (req, res) => {
-    //   const id = req.params.id;
-    //   const lesson = await lessonCollection.findOne({ _id: new ObjectId(id) });
-    //   res.send(lesson);
-    // });
-
-
-    // Single Lesson Get
-    app.get("/allLessons/:id", async (req, res) => {
+    // Single Details Lesson Get
+    app.get("/publicLessons/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await lessonCollection.findOne(query);
       res.send(result);
     });
-    // Single Lesson Get
-    // app.get("/allLessons/email", async (req, res) => {
-    //   const id = req.params.id;
-    //   const query = { _id: new ObjectId(id) };
-    //   const result = await lessonCollection.findOne(query);
-    //   res.send(result);
-    // });
-  
+
+
+
+    // My Post Lessons All
+    app.get("/myLessons", async (req, res) => {
+      const email = req.query.email;
+      const result = await lessonCollection.find({ email: email }).toArray();
+      res.send(result);
+    });
+
+
+
+
+
+
+
+
+
+
+
 
   
 
@@ -134,7 +122,20 @@ async function run() {
 
 
 
+app.get("/publicLessons/creator/:id", async (req, res) => {
+  const { id } = req.params;
 
+  const lessons = await lessonCollection
+    .find({
+      "creator._id": new ObjectId(id)
+    })
+    .toArray();
+
+  res.send({
+    totalLessons: lessons.length,
+    lessons
+  });
+});
 
 
 
@@ -163,12 +164,7 @@ app.get("/lessons", async (req, res) => {
 
 
 
-    // My Post Lessons All
-    app.get("/myLessons", async (req, res) => {
-      const email = req.query.email;
-      const result = await lessonCollection.find({ email: email }).toArray();
-      res.send(result);
-    });
+
 
     // user save
     app.post("/user", async (req, res) => {
@@ -241,7 +237,24 @@ app.get("/lessons", async (req, res) => {
       res.send(comments);
     });
 
-    // lesson recommended
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // Lessons Similar 
     app.get("/lessons/similar/:id", async (req, res) => {
       const id = req.params.id;
       const current = await lessonCollection.findOne({ _id: new ObjectId(id) });
@@ -259,6 +272,9 @@ app.get("/lessons", async (req, res) => {
       res.send(similar);
     });
 
+
+
+
     app.get("/lessons/recommended/:id", async (req, res) => {
       const id = req.params.id;
       const current = await lessonCollection.findOne({ _id: new ObjectId(id) });
@@ -275,6 +291,16 @@ app.get("/lessons", async (req, res) => {
 
       res.send(recommended);
     });
+
+//  //
+
+
+
+
+
+
+
+
 
     //Payment checkout
 
