@@ -121,7 +121,7 @@ async function run() {
 
 
 
-
+// 
 app.get("/publicLessons/creator/:id", async (req, res) => {
   const { id } = req.params;
 
@@ -136,18 +136,6 @@ app.get("/publicLessons/creator/:id", async (req, res) => {
     lessons
   });
 });
-
-
-
-
- app.get("/users", async (req, res) => {
-      const result = await userCollection.find().toArray();
-      res.send(result);
-    });
-
-
-
-
 
 
 // GET /lessons author
@@ -192,7 +180,7 @@ app.get("/lessons", async (req, res) => {
 
         console.log("Saving new user");
 
-        // NEW USER → set timestamps
+        // NEW USER 
 
         const result = await userCollection.insertOne(userData);
 
@@ -203,12 +191,20 @@ app.get("/lessons", async (req, res) => {
       }
     });
 
+    // total get user 
+    app.get("/users", async(req,res)=>{
+      const result = await userCollection.find().toArray()
+      res.send(result)
+    })
+
+
     //get a user role
     app.get("/user/role/:email", async (req, res) => {
       const email = req.params.email;
       const result = await userCollection.findOne({ email });
       res.send({ role: result?.role });
     });
+ 
 
     // comments
 
@@ -292,11 +288,6 @@ app.get("/lessons", async (req, res) => {
       res.send(recommended);
     });
 
-//  //
-
-
-
-
 
 
 
@@ -320,7 +311,7 @@ app.get("/lessons", async (req, res) => {
                   description:
                     "Lifetime premium access to Digital Life Lessons",
                 },
-                unit_amount: 1500 * 100, // amount in cents
+                unit_amount: 1500 * 100,
               },
               quantity: 1,
             },
